@@ -1,7 +1,6 @@
 //! Modeling the [Optimal Stopping problem](https://en.wikipedia.org/wiki/Optimal_stopping)
-//! Note: this code is not optimal nor most idiomatic Rust. The motivation is to 
+//! Note: this code is not optimal nor most idiomatic Rust. The motivation is to
 //! use basic language concepts for a non-trivial example early in the class.
-
 use fastrand;
 
 const N_SUITORS: usize = 100;
@@ -37,7 +36,8 @@ fn pick_a_prince(suitors: [i32; N_SUITORS], n_explore: usize) -> i32 {
 }
 
 fn main() {
-    let mut optimum = (0, 0);  // (score, explore)
+    let mut optimum = (0, 0); // (score, explore)
+    let mut scores = vec![];
 
     for n_explore in 0..N_SUITORS {
         let n_experiments = 100_000;
@@ -52,10 +52,30 @@ fn main() {
                 score += 1;
             }
         }
+        scores.push(score);
         if score > optimum.0 {
             optimum = (score, n_explore);
         }
     }
 
     println!("Optimal exploration threshold: {}", optimum.1);
+
+    // Optional Plotting
+    #[cfg(feature = "plotly")]
+    {
+        use plotly::{layout::Axis, Layout, Plot, Scatter};
+
+        let mut plot = Plot::new();
+        let trace = Scatter::new((0..scores.len()).collect(), scores);
+        plot.add_trace(trace);
+
+        let layout = Layout::new()
+            //.width(800)
+            .height(600)
+            .title("Optimal Stopping")
+            .x_axis(Axis::new().title("n_explore"))
+            .y_axis(Axis::new().title("score"));
+        plot.set_layout(layout);
+        plot.show();
+    }
 }
